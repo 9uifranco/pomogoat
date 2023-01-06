@@ -6,6 +6,7 @@
   import Popup from './components/Popup.vue'
   import Toggle from './components/Toggle.vue'
   import Timer from './components/Timer.vue'
+  import Tasks from './components/Tasks.vue'
 
   // REFS
 
@@ -687,7 +688,7 @@
       @start-timer="startTimer"
     />
 
-    <!-- Tasks -->
+    <!-- Tasks 
 
     <div class="mb-auto flex flex-col items-center self-center md:w-1/2 w-11/12 py-3 pb-6 border rounded-lg shadow-lg bg-white mx-3">
 
@@ -727,7 +728,7 @@
         </div>
       </div>
 
-      <div v-if="showCompletedTasks" class="drop-zone w-screen px-3 md:w-full" @drop="onDrop($event)" @dragenter.prevent>
+      <div v-if="showCompletedTasks" class="w-screen px-3 md:w-full" @drop="onDrop($event)" @dragenter.prevent>
         <div
           v-for="task in completedTasks" :key="task.id"
           class="h-10 flex justify-between items-center p-3 mx-3 border-t-0 border border-black bg-white first:border"
@@ -750,6 +751,17 @@
       </div>
 
     </div>
+
+    -->
+
+    <Tasks
+      :toggleValue="toggleValue"
+      :newTask="newTask"
+      :showNewTasks="showNewTasks"
+      :tasks="tasks"
+      :showCompletedTasks="showCompletedTasks"
+      :completedTasks="completedTasks"
+    />
 
     <!-- Footer 
 
