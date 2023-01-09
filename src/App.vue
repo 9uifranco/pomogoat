@@ -1,5 +1,6 @@
 <script setup>
   import { computed, onMounted, reactive, ref, watch } from 'vue';
+  import Navbar from './components/Navbar.vue'
   import Home from './components/Home.vue'
   import Settings from './components/Settings.vue'
   import About from './components/About.vue'
@@ -301,6 +302,10 @@
     showSettings.value = !showSettings.value
   }
 
+  const closeSettings = () => {
+    showSettings.value = false
+  }
+
   const showHome = () => {
     showSettings.value = false
     state.isPaused = true
@@ -308,6 +313,7 @@
   }
 
   const startResumeButton = () => {
+    closeSettings()
     if(!tasks.value[0]) {
       toggleAddTaskPopup()
       return
@@ -545,6 +551,7 @@
       return
     }
     ref.value = parseFloat(ref.value) + 60
+    confirmResetTimer(true)
   }
 
   const increaseSprints = () => {
@@ -552,6 +559,7 @@
       return
     }
     sprints.value++
+    confirmResetProgress(true)
   }
 
   const decreaseCounter = (whichOne) => {
@@ -570,6 +578,7 @@
       return
     }
     ref.value = parseFloat(ref.value) - 60
+    confirmResetTimer(true)
   }
 
   const decreaseSprints = () => {
@@ -577,6 +586,7 @@
       return
     }
     sprints.value--
+    confirmResetProgress(true)
   }
 
 </script>
@@ -584,14 +594,6 @@
 <template>
 
   <div class="flex flex-col font-Jost min-h-screen bg-pomogoat-primary">
-
-    <!-- Home Component -->
-
-    <Home
-      v-if="!showTimer"
-
-      @show-timer="startResumeButton"
-      @open-help-popup="toggleHelpPopup()"/>
 
     <!-- Popups -->
 
@@ -630,30 +632,39 @@
 
     <!-- Nav Bar -->
 
-    <header class="fixed h-16 w-screen bg-pomogoat-primary flex justify-between items-center p-3 border-b border-black" v-if="showTimer">
-      <img @click="showHome" class="w-6 cursor-pointer" src="./assets/home-icon.png" alt="home-icon">
-      <h1 class="text-3xl">🐐 Pomogoat</h1>
-      <img @click="openSettings" class="w-6 md:mx-5 cursor-pointer" src="./assets/settings-icon.png" alt="settings-icon">
-    </header>
+    <Navbar
+      :showTimer="showTimer"
+      :isPaused="state.isPaused"
+      @open-help-popup="toggleHelpPopup"
+      @showHome="showHome"
+      @openSettings="openSettings"
+      @toggle-pause="togglePause"
+    />
 
-    <!-- Settings Component -->
+    <!-- Home Component -->
 
-    <Settings class="fixed top-16 right-0 bg-pomogoat-primary border-black border border-t-0 "
-      v-if="showSettings"
+    <Home
+      v-if="!showTimer"
+      @show-timer="startResumeButton"
+      @open-help-popup="toggleHelpPopup"
+    />
+
+    <!-- Settings -->
+
+    <Settings v-if="showSettings"
+      class="fixed top-0 right-0 bg-pomogoat-primary border-black border border-t-0 border-r-0"
       :workCounter="state.workCounter"
       :breakCounter="state.breakCounter"
       :cycleCounter="state.cycleCounter"
-
       :workDurationPrettyTime="workDurationPrettyTime"
       :shortBreakDurationPrettyTime="shortBreakDurationPrettyTime"
       :longBreakDurationPrettyTime="longBreakDurationPrettyTime"
       :sprints="sprints"
-
       @decrease-counter="decreaseCounter"
       @increase-counter="increaseCounter"
-      @toggle-pause="togglePause"
       @reset-timer="resetTimer"
       @reset-progress="resetProgress"
+      @close-settings="closeSettings"
     />
 
     <!-- Timer -->
@@ -670,7 +681,6 @@
       :goatEmojis="goatEmojis"
       :sprints="sprints"
       :breakCounter="state.breakCounter"
-
       @start-timer="startTimer"
     />
 

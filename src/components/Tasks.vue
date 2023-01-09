@@ -75,11 +75,11 @@ const editTask = task => {
 <template>
     <div class="mb-auto flex flex-col items-center self-center md:w-1/2 w-11/12 py-3 pb-6 border rounded-lg shadow-lg bg-white mx-3">
 
-        <form class="flex flex-col justify-center items-center py-3 mb-3 px-3 w-full">
-            <div>
-                <label class="text-xl">New task:</label>
-                <input class="mx-2 border-gray-300 rounded-full border px-2" type="text" :value="newTask" @input="$emit('update:newTask', $event.target.value)">
-                <input class="bg-red-600 w-10 rounded-full text-white h-10 shadow-md cursor-pointer transition ease-in-out hover:bg-white hover:text-red-600 hover:border-2 hover:border-red-600 hover:font-semibold" @click.prevent="saveTask" type="submit" value="Add">
+        <form class="flex flex-col justify-center items-center py-3 mb-3 px-3">
+            <div class="flex flex-nowrap items-center">
+                <label class="text-xl pl-2 w-24">New task:</label>
+                <input class=" border-gray-300 rounded-full border w-32 md:w-auto" type="text" :value="newTask" @input="$emit('update:newTask', $event.target.value)">
+                <input class="mx-1 bg-red-600 w-10 rounded-full text-white h-10 shadow-md cursor-pointer transition ease-in-out hover:bg-white hover:text-red-600 hover:border-2 hover:border-red-600 hover:font-semibold" @click.prevent="saveTask" type="submit" value="Add">
             </div>
         </form>
 
