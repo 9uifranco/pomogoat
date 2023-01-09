@@ -4,7 +4,6 @@
   import Settings from './components/Settings.vue'
   import About from './components/About.vue'
   import Popup from './components/Popup.vue'
-  import Toggle from './components/Toggle.vue'
   import Timer from './components/Timer.vue'
   import Tasks from './components/Tasks.vue'
 
@@ -33,16 +32,11 @@
   const completedTasks = ref([])
   const deleteTask = ref(null)
 
-  // ref for edit a task
-
-  const editField = ref([])
-
   // refs for reorder task list
 
   const _el = ref(null)
   const _index = ref(null)
   const _index2 = ref(null)
-
 
   // refs for popups
 
@@ -157,12 +151,10 @@
     }, 1000)
   }
 
+  // control timer
+
   const togglePause = () => {
     state.isPaused = !state.isPaused
-  }
-
-  const hideStartButton = () => {
-    state.showStartButton = false
   }
 
   const startTimer = () => {
@@ -219,7 +211,7 @@
 
   // Watchers for managing local storage
 
-    // For refs
+  // For refs
 
   watch(workDuration, (newVal) => {
     localStorage.setItem('Work Duration', newVal)
@@ -249,7 +241,7 @@
     }
   })
 
-    // For reactives (state)
+  // For reactives (state)
 
   watch(
     () => state.cycleCounter,
@@ -283,8 +275,47 @@
     completedTasks.value = JSON.parse(localStorage.getItem('completed tasks')) || []
   })
 
+  // CONTROLLING VIEW:
+
+  // task list
+
+  const toggleTaskList = () => {
+    toggleValue.value = !toggleValue.value
+  }
+
+  const openNewTasks = () => {
+    showCompletedTasks.value = false;
+    showNewTasks.value = true;
+  }
+
+  const openCompletedTasks = () => {
+    showNewTasks.value = false;
+    showCompletedTasks.value = true;
+  }
+
+  const hideStartButton = () => {
+    state.showStartButton = false
+  }
+
   const openSettings = () => {
     showSettings.value = !showSettings.value
+  }
+
+  const showHome = () => {
+    showSettings.value = false
+    state.isPaused = true
+    showTimer.value = false
+  }
+
+  const startResumeButton = () => {
+    if(!tasks.value[0]) {
+      toggleAddTaskPopup()
+      return
+    }
+    else {
+      showTimer.value = true
+      state.isPaused = false
+    }
   }
 
   const resetTimer = () => {
@@ -294,6 +325,8 @@
   const resetProgress = () => {
     toggleResetProgressPopup()
   }
+
+  // Tasks methods
 
   const saveTask = () => {
     if(newTask.value.trim() === '') {
@@ -332,7 +365,6 @@
   }
 
   const markAsNotDone = task => {
-    exitFocus()
     task.done = false
     tasks.value.push(task)
     completedTasks.value = completedTasks.value.filter(t => t !== task)
@@ -395,9 +427,6 @@
         markAsDone(element)
       }
     })
-
-    
-
   }, { deep: true })
 
   watch(completedTasks, newValue => {
@@ -408,45 +437,6 @@
       }
     });
   }, { deep: true })
-
-  watch(editField, (newVal) => {
-    if(editField.value[0]) {
-      editField.value[0].focus()
-    } 
-  }, {deep: true})
-
-  const exitFocus = () => {
-    if(editField.value) {
-      editField.value[0].blur()
-    }
-  }
-
-  const openNewTasks = () => {
-    showCompletedTasks.value = false;
-    showNewTasks.value = true;
-  }
-
-  const openCompletedTasks = () => {
-    showNewTasks.value = false;
-    showCompletedTasks.value = true;
-  }
-
-  const showHome = () => {
-    showSettings.value = false
-    togglePause()
-    showTimer.value = false
-  }
-
-  const startResumeButton = () => {
-    if(!tasks.value[0]) {
-      toggleAddTaskPopup()
-      return
-    }
-    else {
-      showTimer.value = true
-      state.isPaused = false
-    }
-  }
 
   // toggle popup methods
 
@@ -589,10 +579,6 @@
     sprints.value--
   }
 
-  const toggleTaskList = () => {
-    toggleValue.value = !toggleValue.value
-  }
-
 </script>
 
 <template>
@@ -688,86 +674,27 @@
       @start-timer="startTimer"
     />
 
-    <!-- Tasks 
-
-    <div class="mb-auto flex flex-col items-center self-center md:w-1/2 w-11/12 py-3 pb-6 border rounded-lg shadow-lg bg-white mx-3">
-
-      <form class="flex flex-col justify-center items-center py-3 mb-3 px-3 w-full">
-        <div>
-          <label class="text-xl">New task:</label>
-          <input class="mx-2 border-gray-300 rounded-full border px-2" type="text" v-model="newTask">
-          <input class="bg-red-600 w-10 rounded-full text-white h-10 shadow-md cursor-pointer transition ease-in-out hover:bg-white hover:text-red-600 hover:border-2 hover:border-red-600 hover:font-semibold" @click.prevent="saveTask" type="submit" value="Add">
-        </div>
-      </form>
-
-      <Toggle class="mb-3" :toggleValue="toggleValue" @toggle="toggleTaskList"/>
-
-      <div v-if="showNewTasks" class="w-full px-3" @drop="onDrop($event)" @dragenter.prevent>
-        <div 
-          v-for="task in tasks" :key="task.id" 
-          class="h-10 flex justify-between items-center p-3 mx-3 first:mx-0 first:border-black first:border-2 first:h-20 first:font-bold border-t-0 border border-black bg-white" 
-          :class="[tasks.indexOf(task) == 0 ? 'nextTask' : '', 'task']"
-          draggable="true" 
-          @click="task.showEditInput = true" 
-          @dragstart="startDrag($event, task.id, tasks.indexOf(task))"
-          @dragend="endDrag()"
-          @dragover="dragOver($event, tasks.indexOf(task))">
-          <div class="flex gap-x-3">
-            <input v-model="task.done" type="checkbox">
-            <p v-if="!task.showEditInput">{{task.content}}</p>
-            <input
-              ref="editField"
-              v-on:focusout="task.showEditInput = false"
-              v-on:keyup.enter="exitFocus"
-              v-if="task.showEditInput"
-              v-model="task.content"
-              type="text"
-            >
-          </div>
-          <img @click.prevent="removeTask(task)" class="w-6 cursor-pointer" src="./assets/delete-icon.png" alt="delete-icon">
-        </div>
-      </div>
-
-      <div v-if="showCompletedTasks" class="w-screen px-3 md:w-full" @drop="onDrop($event)" @dragenter.prevent>
-        <div
-          v-for="task in completedTasks" :key="task.id"
-          class="h-10 flex justify-between items-center p-3 mx-3 border-t-0 border border-black bg-white first:border"
-          draggable="true" 
-          @click="task.showEditInput = true"
-          @dragstart="startDrag($event, task.id)" >
-          <div class="flex gap-x-3">
-            <input v-model="task.done" type="checkbox">
-            <p v-if="!task.showEditInput">{{task.content}}</p>
-            <input
-              ref="editField"
-              v-on:focusout="task.showEditInput = false"
-              v-on:keyup.enter="exitFocus"
-              v-if="task.showEditInput"
-              v-model="task.content"
-              type="text" >
-          </div>
-          <img @click.prevent="removeTask(task)" class="w-6 cursor-pointer" src="./assets/delete-icon.png" alt="delete-icon">
-        </div>
-      </div>
-
-    </div>
-
-    -->
+    <!-- Tasks -->
 
     <Tasks
+      v-model:newTask="newTask"
       :toggleValue="toggleValue"
-      :newTask="newTask"
       :showNewTasks="showNewTasks"
       :tasks="tasks"
       :showCompletedTasks="showCompletedTasks"
       :completedTasks="completedTasks"
+      @toggleTaskList="toggleTaskList"
+      @removeTask="removeTask"
+      @dragOver="dragOver"
+      @endDrag="endDrag"
+      @startDrag="startDrag"
+      @onDrop="onDrop"
+      @saveTask="saveTask"
     />
 
-    <!-- Footer 
+    <!-- Footer -->
 
     <About/>
-
-    -->
 
   </div>
   
